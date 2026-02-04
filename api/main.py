@@ -4,7 +4,11 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 import os
+import sys
 import logging
+
+# Ensure the api directory is in the path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)

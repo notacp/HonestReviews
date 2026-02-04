@@ -138,26 +138,26 @@ export default function Home() {
             className="space-y-12"
           >
             {/* Analysis Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
               {/* Highlight Card */}
-              <div className="lg:col-span-8">
-                <article className="glass-card p-12 h-full flex flex-col md:flex-row items-center gap-12">
+              <div className="lg:col-span-3">
+                <article className="glass-card p-10 lg:p-12 h-full flex flex-col md:flex-row items-center gap-8 lg:gap-12">
                   <SentimentGauge score={result.analysis.sentiment_score} />
-                  <div className="flex-1 space-y-6 text-center md:text-left">
-                    <h2 className="text-4xl font-black tracking-tight text-black">
+                  <div className="flex-1 space-y-4 text-center md:text-left">
+                    <h2 className="text-3xl lg:text-4xl font-black tracking-tight text-black">
                       The Verdict
                     </h2>
-                    <p className="text-2xl leading-relaxed text-gray-500 font-medium italic">
-                      "{result.analysis.conclusion || "Analyzing consensus..."}"
+                    <p className="text-lg lg:text-xl leading-relaxed text-gray-500 font-medium">
+                      {result.analysis.conclusion || "Analyzing consensus..."}
                     </p>
                   </div>
                 </article>
               </div>
 
               {/* Theme Cloud */}
-              <div className="lg:col-span-4 flex flex-col">
+              <div className="lg:col-span-2 flex flex-col">
                 <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4 ml-4">Trending Patterns</h3>
-                <div className="flex-1">
+                <div className="flex-1 min-h-[320px]">
                   <WordCloud words={result.analysis.word_cloud} />
                 </div>
               </div>
