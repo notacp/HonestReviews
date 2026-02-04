@@ -1,88 +1,54 @@
-### 🕵️‍♂️ HonestReviews
+# 🕵️‍♂️ HonestReviews
 
 **No fake stars. No paid reviews. Just real opinions.**
 
-HonestReviews is a lightweight web app that helps users make smarter purchasing decisions by **scraping authentic product reviews from Reddit** — bypassing the sea of fake reviews found on platforms like Amazon and Flipkart.
+HonestReviews is a premium web application that helps users make smarter purchasing decisions by scraping and analyzing authentic product reviews from Reddit. It bypasses the sea of fake and sponsored reviews found on major e-commerce platforms using AI-driven sentiment analysis.
 
----
+## ✨ Features
 
-## 🔍 What It Does
+- **Reddit Scraping**: Pulls recent discussions from relevant subreddits.
+- **AI Analysis**: Powered by Groq (LLAMA 3.3) for sentiment scoring and consensus summaries.
+- **Minimalist Glassmorphism**: A state-of-the-art UI inspired by Notion and Medium.
+- **Sentiment Gauge**: Visual 0-100 "Truth Score" for every product.
+- **Key Themes**: Dynamic word cloud visualizing recurring patterns.
+- **Recent Searches**: Persistent history for quick re-access.
 
-> ✅ **Search for a product**  
-> ✅ **Pulls real user experiences from Reddit threads**  
-> ✅ **Highlights pros, cons, and recurring patterns**  
-> ✅ **Returns a clear, no-fluff summary to help you decide**  
+## 🛠 Tech Stack
 
-Whether you're buying headphones, skincare, or laptops — HonestReviews gives you the **raw truth** directly from the people who've actually used the product.
+- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Framer Motion.
+- **Backend**: FastAPI (Python), PRAW (Reddit API), Groq (LLM).
+- **Deployment**: Optimized for Vercel Serverless Functions.
 
----
+## 🚀 Getting Started
 
-## 🚀 Features
+### Prerequisites
 
-- 🔎 **Category + Product Search**
-- 🤖 **Reddit comment scraping**
-- 🧠 **Basic sentiment parsing for pros/cons**
-- 🧼 **Clean UI for review summaries**
-- 🧵 Direct Reddit thread links for deeper exploration
+- Node.js 18+
+- Python 3.9+
+- Reddit API Credentials
+- Groq API Key
 
----
+### Backend Setup
 
-## 🧠 Why It Exists
-
-Fake reviews plague most ecommerce platforms.  
-HonestReviews was built to solve this **trust gap** by leveraging communities like Reddit, where real people share real experiences — without an incentive to sell you something.
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend:** Gradio (Choose based on your stack)
-- **Backend:** Python, PRAW (Reddit API), BeautifulSoup
-- **NLP:** TextBlob / VADER (for sentiment analysis)
-- **Deployment:** Hugging Face Spaces
----
-
-## 📦 Installation
-
+1. From the project root:
 ```bash
-git clone https://github.com/yourusername/honestreviews.git
-cd honestreviews
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-python app.py
+uvicorn api.main:app --reload
 ```
 
-> ⚠️ Make sure to set your Reddit API credentials in a `.env` file:
-```env
-REDDIT_CLIENT_ID=your_id
-REDDIT_CLIENT_SECRET=your_secret
-REDDIT_USER_AGENT=honestreviews-app
+### Frontend Setup
+
+1. Install dependencies:
+```bash
+npm install
 ```
-
----
-
-## 🔗 Live Demo
-
-👉 https://huggingface.co/spaces/notacp/HonestReviews
-
----
-
-## 🤝 Contributions
-
-Have an idea to make this better?  
-Found a bug?  
-Want to improve sentiment accuracy?
-
-Feel free to open an issue or submit a PR. Let’s make online shopping honest again.
-
----
+2. Run development server:
+```bash
+npm run dev
+```
 
 ## 📄 License
 
-MIT License  
-Built with ❤️ to help people make better decisions.
-
----
-
-## 👨‍💻 Author
-
-Made by [Pradyumn Khanchandani](https://www.linkedin.com/in/pradyumn-khanchandani/) — a Generative AI creator building tools that solve real problems.
+MIT

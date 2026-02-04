@@ -1,3 +1,7 @@
-gradio
-praw 
-groq 
+fastapi
+uvicorn
+praw
+groq
+python-dotenv
+textblob
+pydantic
