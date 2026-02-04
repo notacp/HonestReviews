@@ -15,12 +15,10 @@ export interface Source {
 
 export interface SearchResult {
     product: string;
-    category: string;
     analysis: Analysis;
     sources: Source[];
 }
 
 export interface SearchHistoryItem {
     product: string;
-    category: string;
 }

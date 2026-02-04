@@ -1,38 +1,11 @@
 import praw
 import prawcore
 import os
+import logging
 from typing import List, Dict, Optional
 
-# --- Category Data ---
-subreddit_categories = {
-    "General": ["BuyItForLife", "GoodValue", "productreviews", "Frugal", "HelpMeFind", "whatshouldibuy"],
-    "Technology & Electronics": [
-        "technology", "gadgets", "hardware", "laptops", "suggestalaptop", "buildapc", "pcmasterrace", 
-        "Android", "ios", "smartphones", "headphones", "audiophile", "MouseReview", "Monitors", 
-        "techsupport", "apple", "Microsoft", "GooglePixel", "HomeAutomation", "Networking"
-    ],
-    "Home Goods & Appliances": [
-        "Appliances", "HomeImprovement", "vacuumcleaners", "Coffee", "Cooking", "BuyItForLife", 
-        "CleaningTips", "furniture", "Mattress", "homeautomation"
-    ],
-    "Fashion & Apparel": [
-        "malefashionadvice", "femalefashionadvice", "OUTFITS", "fashionadvice", "goodyearwelt", 
-        "rawdenim", "Watches", "streetwear", "frugalmalefashion", "frugalfemalefashion", "backpacks"
-    ],
-    "Beauty & Personal Care": [
-        "SkincareAddiction", "MakeupAddiction", "AsianBeauty", "beauty", "wicked_edge", "fragrance", 
-        "HaircareScience", "brownbeauty", "VeganBeauty", "CrueltyFreeMUA"
-    ],
-    "Outdoors, Sports & Travel Gear": [
-        "CampingandHiking", "CampingGear", "outdoors", "hiking", "Backpacking", "Ultralight", 
-        "WildernessBackpacking", "Cycling", "RunningShoeGeeks", "onebag", "travel", "skiing", 
-        "snowboarding", "Fishing", "ClimbingGear"
-    ],
-    "Hobbies & Specific Interests": [
-        "Gaming", "pcgaming", "photography", "audiophile", "headphones", "MechanicalKeyboards", 
-        "books", "suggestmeabook", "boardgames", "lego", "gardening", "DIY", "Gunpla", "Homebrewing"
-    ]
-}
+# Setup Logging
+logger = logging.getLogger(__name__)
 
 def get_reddit_client():
     return praw.Reddit(
@@ -42,43 +15,61 @@ def get_reddit_client():
         read_only=True
     )
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-def scrape_reddit(product_name: str, category: str, max_posts: int = 5, max_comments: int = 10) -> Dict:
+def scrape_reddit(product_name: str, max_posts: int = 6, max_comments: int = 15) -> Dict:
     """
-    Scrapes Reddit and returns a structured dictionary with combined text and validation details.
+    Dynamically finds relevant subreddits and scrapes content for a product.
+    1. Searches for "{product_name} review" across all subreddits.
+    2. Identifies the most relevant threads.
+    3. Extracts content and metadata.
     """
-    subreddits = subreddit_categories.get(category)
-    if not subreddits:
-        return {"error": "Invalid category"}
-
     reddit = get_reddit_client()
     combined_text = []
     sources = []
+    seen_urls = set()
     
-    # Track stats
-    posts_found = 0
+    # Search queries to try
+    queries = [
+        f'"{product_name}" review',
+        f'"{product_name}" thoughts',
+        f'"{product_name}" vs',
+        product_name
+    ]
     
-    logger.info(f"Scraping for '{product_name}' in {category}...")
+    logger.info(f"Starting dynamic discovery for: {product_name}")
 
-    for sub_name in subreddits:
-        if posts_found >= max_posts * 2: # Optimization: Stop if we have enough sources
+    for search_query in queries:
+        if len(sources) >= max_posts:
             break
             
-        clean_sub_name = sub_name.replace("r/", "")
         try:
-            subreddit = reddit.subreddit(clean_sub_name)
-            submissions = subreddit.search(product_name, sort='relevance', limit=max_posts)
+            # Search across all subreddits for relevant threads
+            submissions = reddit.subreddit("all").search(
+                search_query, 
+                sort='relevance', 
+                time_filter='year', 
+                limit=max_posts
+            )
             
             for submission in submissions:
-                posts_found += 1
+                if len(sources) >= max_posts:
+                    break
+                    
+                if submission.url in seen_urls:
+                    continue
+                
+                # Filter for likely review content
+                # We want threads with comments and reasonable scores
+                if submission.num_comments < 3:
+                    continue
+
+                seen_urls.add(submission.url)
                 
                 # Add Post Content
-                post_content = f"Title: {submission.title}\n"
+                post_content = f"### Post from r/{submission.subreddit.display_name}\n"
+                post_content += f"Title: {submission.title}\n"
                 if submission.selftext:
-                    post_content += f"Body: {submission.selftext}\n"
+                    # Truncate extremely long posts
+                    post_content += f"Body: {submission.selftext[:2000]}\n"
                 
                 combined_text.append(post_content)
                 
@@ -86,26 +77,30 @@ def scrape_reddit(product_name: str, category: str, max_posts: int = 5, max_comm
                 sources.append({
                     "title": submission.title,
                     "url": submission.url,
-                    "subreddit": clean_sub_name,
+                    "subreddit": submission.subreddit.display_name,
                     "score": submission.score
                 })
 
-                # Add Comments
+                # Add Top Comments
                 submission.comment_sort = 'top'
                 submission.comments.replace_more(limit=0)
-                count = 0
+                
+                comment_count = 0
                 for comment in submission.comments.list():
-                    if count >= max_comments: break
-                    if comment.body and comment.body not in ['[removed]', '[deleted]']:
-                        combined_text.append(f"Comment: {comment.body}")
-                        count += 1
+                    if comment_count >= max_comments:
+                        break
+                    if comment.body and comment.body not in ['[removed]', '[deleted]'] and len(comment.body) > 20:
+                        combined_text.append(f"Comment: {comment.body[:1500]}")
+                        comment_count += 1
                         
         except Exception as e:
-            logger.error(f"Error scraping r/{clean_sub_name}: {e}")
+            logger.error(f"Error during dynamic search query '{search_query}': {e}")
             continue
 
     if not combined_text:
-        return {"error": "No results found"}
+        return {"error": f"No Reddit discussions found for '{product_name}'. Try a more specific name."}
+
+    logger.info(f"Found {len(sources)} relevant threads across {len(set(s['subreddit'] for s in sources))} subreddits.")
 
     return {
         "text_blob": "\n\n".join(combined_text),

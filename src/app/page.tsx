@@ -29,7 +29,7 @@ export default function Home() {
     }
   }, []);
 
-  const handleSearch = useCallback(async (product: string, category: string) => {
+  const handleSearch = useCallback(async (product: string) => {
     if (!product.trim()) return;
 
     setLoading(true);
@@ -40,7 +40,7 @@ export default function Home() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_name: product, category }),
+        body: JSON.stringify({ product_name: product }),
       });
 
       if (!response.ok) {
@@ -54,7 +54,7 @@ export default function Home() {
       // Update history in a clean way
       setHistory(prev => {
         const newHistory = [
-          { product, category },
+          { product },
           ...prev.filter(h => h.product.toLowerCase() !== product.toLowerCase()).slice(0, 4)
         ];
         localStorage.setItem("honest_reviews_history", JSON.stringify(newHistory));
@@ -71,14 +71,14 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-24 selection:bg-black selection:text-white">
       {/* Hero Header */}
-      <header className="pt-28 pb-16 px-6 max-w-5xl mx-auto text-center">
+      <header className={`pt-28 px-6 max-w-5xl mx-auto text-center transition-all ${(result || loading) ? 'pb-8' : 'pb-16'}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="mb-16"
+          className={(result || loading) ? "mb-8" : "mb-16"}
         >
-          <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-black to-gray-400">
+          <h1 className="text-6xl md:text-8xl font-serif font-black tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-black to-gray-400">
             Honest Reviews
           </h1>
           <p className="text-xl md:text-2xl text-gray-500 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -87,11 +87,10 @@ export default function Home() {
           </p>
         </motion.div>
 
-        <div className="flex justify-center mb-16 px-4">
+        <div className={`flex justify-center px-4 transition-all ${(result || loading) ? 'mb-8' : 'mb-16'}`}>
           <SearchBar
             onSearch={handleSearch}
             isLoading={loading}
-            categories={PRODUCT_CATEGORIES}
           />
         </div>
 
@@ -106,9 +105,9 @@ export default function Home() {
               {history.map((h, i) => (
                 <button
                   key={i}
-                  onClick={() => handleSearch(h.product, h.category)}
+                  onClick={() => handleSearch(h.product)}
                   className="px-6 py-2.5 glass-card hover:bg-white text-sm font-bold tracking-tight transition-all"
-                  aria-label={`Search for ${h.product} in ${h.category}`}
+                  aria-label={`Search for ${h.product}`}
                 >
                   {h.product}
                 </button>

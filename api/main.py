@@ -24,7 +24,7 @@ load_dotenv(dotenv_path=env_path)
 app = FastAPI(
     title="HonestReviews API",
     description="Backend API for scraping and analyzing authentic product reviews from Reddit.",
-    version="1.0.0"
+    version="1.1.0"
 )
 
 # Setup CORS
@@ -39,7 +39,6 @@ app.add_middleware(
 # --- Pydantic Models ---
 class AnalyzeRequest(BaseModel):
     product_name: str = Field(..., min_length=1, description="The name of the product to analyze")
-    category: str = Field(..., description="The category the product belongs to")
 
 class Source(BaseModel):
     title: str
@@ -56,7 +55,6 @@ class AnalysisData(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     product: str
-    category: str
     analysis: AnalysisData
     sources: List[Source]
 
@@ -70,13 +68,13 @@ def health_check():
 @app.post("/api/analyze", response_model=AnalyzeResponse, tags=["Analysis"])
 def analyze_product(request: AnalyzeRequest):
     """
-    Orchestrates the scraping and AI analysis flow.
+    Orchestrates the scraping and AI analysis flow with dynamic subreddit discovery.
     """
-    logger.info(f"Analysis requested for product: {request.product_name} in {request.category}")
+    logger.info(f"Dynamic Analysis requested for product: {request.product_name}")
     
-    # 1. Scrape Reddit
+    # 1. Scrape Reddit dynamically
     try:
-        scrape_result = scrape_reddit(request.product_name, request.category)
+        scrape_result = scrape_reddit(request.product_name)
     except Exception as e:
         logger.error(f"Scraper error: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve data from Reddit.")
@@ -97,7 +95,6 @@ def analyze_product(request: AnalyzeRequest):
     # 3. Construct Response
     return AnalyzeResponse(
         product=request.product_name,
-        category=request.category,
         analysis=AnalysisData(**analysis_result),
         sources=[Source(**src) for src in scrape_result.get("sources", [])]
     )

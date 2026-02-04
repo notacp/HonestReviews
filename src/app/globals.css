@@ -13,7 +13,7 @@
   body {
     background: radial-gradient(circle at top left, #fdfbfb 0%, #ebedee 100%), #ffffff;
     color: var(--foreground);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
   }
 }
@@ -25,6 +25,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
 }
 
 @layer components {
