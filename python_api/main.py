@@ -70,6 +70,7 @@ def health_check():
     return {"status": "ok", "message": "HonestReviews Backend is running"}
 
 @app.post("/api/analyze", response_model=AnalyzeResponse, tags=["Analysis"])
+@app.post("/analyze", response_model=AnalyzeResponse, tags=["Analysis"])
 def analyze_product(request: AnalyzeRequest):
     """
     Orchestrates the scraping and AI analysis flow with dynamic subreddit discovery.
